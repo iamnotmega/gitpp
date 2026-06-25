@@ -7,7 +7,10 @@
 #include <openssl/sha.h>
 #include <fstream>
 #include <algorithm>
+#include <iostream>
 #include <zlib.h>
+
+#include "tree.hpp"
 
 /* Convert a SHA1 hash into hexadecimal */
 std::string sha1_to_hex(const unsigned char* hash) {
@@ -163,4 +166,44 @@ std::pair<std::string, std::vector<uint8_t>> read_object(const std::string &sha1
         throw std::runtime_error("expected size " + std::to_string(size) + ", got " + std::to_string(data.size()) + " bytes");
     }
     return {obj_type, data};
+}
+
+/* Formats raw object data and outputs it based on the requested mode */
+void cat_file(const std::string& mode, const std::string &sha1_prefix) {
+    auto [obj_type, data] = read_object(sha1_prefix); /* Stores object type and raw data */
+    if (mode == "commit" || mode == "tree" || mode == "blob") { /* Check if the mode is a primary object type */
+        /* Check if found object type matches the expected type */
+        if (obj_type != mode) {
+            throw std::runtime_error("expected object type " + mode + ", got " + obj_type);
+        }
+        /* Write binary data to standard output (stdout) */
+        std::cout.write(
+            reinterpret_cast<const char*>(data.data()),
+            data.size()
+        );
+        /* Choose proper mode based on passed argument */
+        } else if (mode == "size") {
+            std::cout << data.size() << '\n'; /* Print size of the uncompressed data */
+        } else if (mode == "type") {
+            std::cout << obj_type << '\n'; /* Print the type of the stored object */
+        } else if (mode == "pretty") { /* Human-readable formatting */
+            if (obj_type == "commit" || obj_type == "blob") {
+                std::cout.write(reinterpret_cast<const char*>(data.data()),data.size());
+            } else if (obj_type == "tree") {
+                auto entries = read_tree("", data); /* Parse the object into a list of file entries */
+                for (const auto& entry : entries) { /* Iterate through every file/folder entry from the parsed tree object */
+                    unsigned int mode_val = std::stoul(entry[0], nullptr, 8); /* Convert the mode string to an integer for octal formatting */
+                    /* Print out the entry in a human-readable-format */
+                    std::cout << std::setw(6) << std::setfill('0') << std::oct << mode_val << " "
+                  << entry[1] << " "
+                  << entry[2] << "\t"
+                  << entry[3] << "\n";
+                }
+            } else { /* Unexpected object type handling */
+                throw std::invalid_argument("unhandled object type " + obj_type);
+            }
+        }
+    else { /* Unexpected mode handling */
+        throw std::invalid_argument("unexpected mode: " + mode);
+    }
 }
