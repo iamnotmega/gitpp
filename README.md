@@ -1,5 +1,5 @@
 # Git++
-The Git version control system rewritten in C++
+A reimplementation of the Git version control system in C++
 
 > [!NOTE]
 > Please note that Git++ is still under **heavy** development and is not ready for use.
