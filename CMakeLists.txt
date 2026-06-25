@@ -15,3 +15,6 @@ add_executable(gitpp
         src/object.cpp
 )
 target_link_libraries(gitpp PRIVATE OpenSSL::Crypto ZLIB::ZLIB)
+
+enable_testing()
+add_subdirectory(tests)
