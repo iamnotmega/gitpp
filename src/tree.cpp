@@ -33,7 +33,7 @@ std::vector<std::vector<std::string>> read_tree(const std::string& sha1, std::ve
         /* Calculate null byte index position */
         size_t end = std::distance(data.begin(), it);
 
-        std::string metadata(data.begin() + i, data.begin() + end); /* Convert raw bytes into a string */
+        std::string metadata(reinterpret_cast<const char*>(&data[i]), end - i); /* Convert raw bytes into a string */
         size_t space_pos = metadata.find(' '); /* Find dividing line between the mode and the path */
 
         /* Extract file mode and path from metadata variable */
