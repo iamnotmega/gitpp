@@ -5,6 +5,7 @@
 #include "repository.hpp"
 
 namespace gitpp {
+    /* Create a new empty repository in a specified directory */
     void init(const std::string& repo) {
         /* Create a directory for the repository */
         std::filesystem::create_directory(repo);

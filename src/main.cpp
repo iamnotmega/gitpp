@@ -2,6 +2,7 @@
 #include <iostream>
 #include "repository.hpp"
 
+/* Print text block with helpful usage information */
 void print_usage() {
     std::cout << "Usage: gitpp <command> [<args>]\n\n"
               << "Available commands:\n"
