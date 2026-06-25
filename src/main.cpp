@@ -4,15 +4,17 @@
 
 /* Print text block with helpful usage information */
 void print_usage() {
-    std::cout << "Usage: gitpp <command> [<args>]\n\n"
+    std::cout << "Usage: gitpp [-h | --help] <command> [<args>]\n\n"
               << "Available commands:\n"
-              << "  init <directory>           Initialize a new, empty repository\n";
+              << "  init <directory>           Initialize a new, empty repository\n"
+              << "Options:\n"
+              << "-h, --help      Show this help message\n";
+
 }
 
 int main(const int argc, char* argv[]) {
     /* Ensure a subcommand has been passed, otherwise print help message */
     if (argc < 2) {
-        std::cout << "gitpp: no command\n";
         std::cout << "Usage: gitpp <command> [<args>]\n";
         std::cout << "Try 'gitpp --help' for more options.\n";
         return 1;
@@ -20,7 +22,7 @@ int main(const int argc, char* argv[]) {
 
     std::string command = argv[1];
 
-    if (command == "--help") {
+    if (command == "--help" || command == "-h") {
         print_usage();
         return 0;
     }
