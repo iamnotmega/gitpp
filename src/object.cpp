@@ -6,6 +6,7 @@
 #include <sstream>
 #include <openssl/sha.h>
 #include <fstream>
+#include <algorithm>
 #include <zlib.h>
 
 /* Convert a SHA1 hash into hexadecimal */
@@ -95,3 +96,71 @@ std::filesystem::path find_object(const std::string &sha1_prefix) {
         }
         return obj_dir / objects[0];
     }
+
+/* Read an object using a partial SHA1 hash prefix */
+std::pair<std::string, std::vector<uint8_t>> read_object(const std::string &sha1_prefix) {
+    std::filesystem::path path = find_object(sha1_prefix); /* Locate object file path */
+
+    /* Load zlib-compressed object data into memory */
+    std::ifstream file(path, std::ios::binary);
+    std::vector<uint8_t> compressed(
+        std::istreambuf_iterator<char>(file),
+        {}
+    );
+
+    /* Decompress into full_data */
+    std::vector<uint8_t> full_data; /* Create output vector for decompressed data */
+
+    z_stream zs{};
+    zs.next_in = compressed.data();
+    zs.avail_in = compressed.size();
+
+    inflateInit(&zs); /* Begin zlib decompression */
+    uint8_t buffer[4096]; /* Temporary buffer */
+    int result = 0; /* Result variable */
+
+    do {
+        zs.next_out = buffer;
+        zs.avail_out = sizeof(buffer);
+
+        result = inflate(&zs, Z_NO_FLUSH); /* Decompression */
+
+        /* Copy decompressed bytes into the full_data vector */
+        full_data.insert(
+            full_data.end(),
+            buffer,
+            buffer + (sizeof(buffer)) - zs.avail_out);
+    } while (result != Z_STREAM_END); /* Continue until end of stream (no more compressed bytes left) */
+
+    inflateEnd(&zs); /* Stop zlib decompression */
+
+    /* Define nul index and header for decompressed data */
+    size_t nul_index = std::find(full_data.begin(), full_data.end(), 0) - full_data.begin();
+    std::string header(
+        full_data.begin(),
+        full_data.begin() + nul_index);
+
+
+    /* Define object type and size as strings */
+    std::string obj_type;
+    std::string size_str;
+
+    /* Split the header into object type and size */
+    std::istringstream iss(header);
+    iss >> obj_type >> size_str;
+
+    /* Convert size_str to an integer */
+    int size = std::stoull(size_str);
+
+    /* Extract the actual object data after the header */
+    std::vector<uint8_t> data(
+        full_data.begin() + nul_index + 1,
+        full_data.end()
+    );
+
+    /* Check if header-stated size matches actual data size */
+    if (size != data.size()) {
+        throw std::runtime_error("expected size " + std::to_string(size) + ", got " + std::to_string(data.size()) + " bytes");
+    }
+    return {obj_type, data};
+}

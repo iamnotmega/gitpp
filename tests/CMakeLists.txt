@@ -20,3 +20,8 @@ target_link_libraries(test_hash_object PRIVATE OpenSSL::Crypto ZLIB::ZLIB)
 add_executable(test_find_object test_find_object.cpp ../src/object.cpp ../src/repository.cpp)
 target_include_directories(test_find_object PRIVATE ../src)
 target_link_libraries(test_find_object PRIVATE OpenSSL::Crypto ZLIB::ZLIB)
+
+# test_read_object
+add_executable(test_read_object test_read_object.cpp ../src/object.cpp ../src/repository.cpp)
+target_include_directories(test_read_object PRIVATE ../src)
+target_link_libraries(test_read_object PRIVATE OpenSSL::Crypto ZLIB::ZLIB)
