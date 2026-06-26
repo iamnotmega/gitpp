@@ -23,3 +23,4 @@ struct IndexEntry {
 };
 
 std::vector<IndexEntry> read_index();
+void ls_files(bool details = false);

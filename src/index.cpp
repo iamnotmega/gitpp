@@ -1,8 +1,11 @@
 #include "index.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <vector>
 #include <openssl/sha.h>
+
+#include "object.hpp"
 
 /* Read the index file and return an index entry */
 std::vector<IndexEntry> read_index() {
@@ -125,4 +128,25 @@ std::vector<IndexEntry> read_index() {
         }
     }
     return entries;
+}
+
+/* Print list of files in index and optionally their metadata */
+void ls_files(const bool details) {
+    for (const auto& entry : read_index()) { /* Loop through every entry in the index */
+        if (details) { /* Print extra metadata if "details" is true */
+            int stage = (entry.flags >> 12) & 0x3; /* Extract stage from the entry's flags */
+            /* Print file mode (octal), SHA-1 hash, stage and file path */
+            std::cout << std::setw(6) << std::setfill('0')
+          << std::oct << entry.mode
+          << ' '
+          << sha1_to_hex(entry.sha1.data())
+          << ' '
+          << std::dec << stage
+          << '\t'
+          << entry.path
+          << '\n';
+        } else { /* Otherwise print just the path of the index entry */
+            std::cout << entry.path << '\n';
+        }
+    }
 }
