@@ -169,7 +169,7 @@ std::pair<std::string, std::vector<uint8_t>> read_object(const std::string &sha1
 }
 
 /* Formats raw object data and outputs it based on the requested mode */
-void cat_file(const std::string& mode, const std::string &sha1_prefix) {
+void cat_file(const std::string& mode, const std::string& sha1_prefix) {
     auto [obj_type, data] = read_object(sha1_prefix); /* Stores object type and raw data */
     if (mode == "commit" || mode == "tree" || mode == "blob") { /* Check if the mode is a primary object type */
         /* Check if found object type matches the expected type */
