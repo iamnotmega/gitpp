@@ -14,6 +14,7 @@ add_executable(gitpp
         src/repository.cpp
         src/object.cpp
         src/tree.cpp
+        src/index.cpp
 )
 target_link_libraries(gitpp PRIVATE OpenSSL::Crypto ZLIB::ZLIB)
 
