@@ -6,12 +6,13 @@
 
 /* Print text block with helpful usage information */
 void print_usage() {
-    std::cout << "Usage: gitpp [-h | --help] <command> [<args>]\n\n"
+    std::cout << "Usage: gitpp <command> [<args>]\n\n"
               << "Available commands:\n"
               << "  init <directory>           Initialize a new, empty repository\n"
               << "  cat-file <mode> <sha1>     Provide formatted data from a repository object hash\n"
               << "Options:\n"
-              << "-h, --help      Show this help message\n";
+              << "-h, --help      Show this help message\n"
+              << "-v, --version      Print version information\n";
 
 }
 
@@ -27,6 +28,10 @@ int main(const int argc, char* argv[]) {
 
     if (command == "--help" || command == "-h") {
         print_usage();
+        return 0;
+    }
+    if (command == "--version" || command == "-v") {
+        std::cout << "git++ version " << GITPP_VERSION << '\n';
         return 0;
     }
     if (command == "init") {
