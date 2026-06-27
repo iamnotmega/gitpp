@@ -1,9 +1,19 @@
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 
 #include "index.hpp"
 #include "object.hpp"
 #include "repository.hpp"
+#include "main.hpp"
+
+/* Helper function for reading files */
+std::string read_file(const std::string& path) {
+    std::ifstream file(path, std::ios::binary); /* Read all bytes in file */
+    if (!file) return {}; /* Return nothing if file failed to open */
+    return std::string((std::istreambuf_iterator<char>(file)), /* Return them as a string */
+                        std::istreambuf_iterator<char>());
+}
 
 /* Print text block with helpful usage information */
 void print_usage() {
