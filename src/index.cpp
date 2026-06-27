@@ -155,7 +155,7 @@ void ls_files(const bool details) {
     }
 }
 
-/* Get status of current repository and return lists of changed, new and deleted files */
+/* Get status of working copy and return lists of changed, new and deleted files */
 Status get_status() {
     /* Create a new empty set for paths */
     std::set<std::string> paths;
@@ -223,4 +223,33 @@ Status get_status() {
         std::move(new_files),
         std::move(deleted)
     };
+}
+
+/* Show status of working copy */
+void status() {
+    Status status_result = get_status(); /* Get status of working copy using get_status() */
+    /* Save changed, new and deleted files into their own variables */
+    std::set<std::string> changed = status_result.changed;
+    std::set<std::string> new_files = status_result.new_files;
+    std::set<std::string> deleted = status_result.deleted;
+
+    /* Print out working copy status */
+    if (!changed.empty()) { /* Changed files */
+        std::cout << "changed files:\n";
+        for (const auto& path : changed) { /* Loop through all paths in changed files set */
+            std::cout << "   " << path << "\n";
+        }
+    }
+    if (!new_files.empty()) {
+        std::cout << "new files:\n";
+        for (const auto& path : new_files) {
+            std::cout << "   " << path << "\n";
+        }
+    }
+    if (!deleted.empty()) {
+        std::cout << "deleted files:\n";
+        for (const auto& path : deleted) {
+            std::cout << "   " << path << "\n";
+        }
+    }
 }

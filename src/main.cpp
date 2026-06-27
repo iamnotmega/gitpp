@@ -22,6 +22,7 @@ void print_usage() {
               << "  init <directory>           Initialize a new, empty repository\n"
               << "  cat-file <mode> <sha1>     Provide formatted data from a repository object hash\n"
               << "  ls-files [-s|--stage]     Print list of files in index\n"
+              << "  status     Show status of working copy\n"
               << "Options:\n"
               << "-h, --help      Show this help message\n"
               << "-v, --version      Print version information\n";
@@ -73,6 +74,8 @@ int main(const int argc, char* argv[]) {
             }
         }
         ls_files(stage);
+    } else if (command == "status") {
+        status();
     } else { /* Unknown command handling */
         std::cerr << "Unknown command: " << command << '\n';
         std::cout << "Try 'gitpp --help' for more options.\n";
