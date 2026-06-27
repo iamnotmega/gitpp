@@ -4,7 +4,11 @@
 #include <iostream>
 #include <vector>
 #include <openssl/sha.h>
+#include <set>
+#include <algorithm>
+#include <unordered_map>
 
+#include "main.hpp"
 #include "object.hpp"
 
 /* Read the index file and return an index entry */
@@ -149,4 +153,74 @@ void ls_files(const bool details) {
             std::cout << entry.path << '\n';
         }
     }
+}
+
+/* Get status of current repository and return lists of changed, new and deleted files */
+Status get_status() {
+    /* Create a new empty set for paths */
+    std::set<std::string> paths;
+
+    /* Loop through every directory starting from current working directory */
+    for (auto& entry : std::filesystem::recursive_directory_iterator(".")) {
+        /* Skip .gitpp folder's contents */
+        if (entry.path().string().find(".gitpp") != std::string::npos) {
+            continue;
+        }
+        auto path = entry.path().string(); /* Convert current file/folder path into a string */
+        std::replace(path.begin(), path.end(), '\\', '/'); /* Replace '\' with '/' */
+
+        /* If the path starts with './' then remove the prefix */
+        if (path.starts_with("./")) {
+            path = path.substr(2);
+        }
+        paths.insert(path); /* Add path to set if it doesn't exist already */
+    }
+
+    /* Lookup table for index entries using a file path */
+    std::pmr::unordered_map<std::string, IndexEntry> entries_by_path;
+
+    /* Add each index entry to a path -> entry lookup table */
+    for (const auto& e : read_index()) {
+        entries_by_path[e.path] = e;
+    }
+
+    /* Set of file paths extracted from the index entries */
+    std::set<std::string> entry_paths;
+
+    /* Extract all file paths from index entries into a set */
+    for (const auto& [path, _] : entries_by_path) {
+        entry_paths.insert(path);
+    }
+
+    /* Empty set for changed files */
+    std::set<std::string> changed;
+
+    /* Loop through all file paths in current directory */
+    for (const auto& p : paths) {
+        /* Only consider files that are tracked in the index */
+        if (entry_paths.find(p) != entry_paths.end()) {
+            /* Compare current file hash with stored index hash */
+            if (hash_object(read_file(p), "blob", false) != sha1_to_hex(entries_by_path[p].sha1.data())) {
+                /* Mark file as changed if file content differs from index */
+                changed.insert(p);
+            }
+        }
+    }
+
+    /* Declare sets for new and deleted files */
+    std::set<std::string> new_files;
+    std::set<std::string> deleted;
+
+    /* Insert paths that are not in the index but in the current directory (new files) */
+    std::set_difference(paths.begin(), paths.end(), entry_paths.begin(), entry_paths.end(), std::inserter(new_files, new_files.begin()));
+
+    /* Insert paths that are in the index but not in the current directory (deleted files) */
+    std::set_difference(entry_paths.begin(), entry_paths.end(), paths.begin(), paths.end(), std::inserter(deleted, deleted.begin()));
+
+    /* Return the changed, new_files and deleted sets */
+    return Status{
+        std::move(changed),
+        std::move(new_files),
+        std::move(deleted)
+    };
 }

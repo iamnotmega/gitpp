@@ -3,6 +3,7 @@
 #include <array>
 #include <string>
 #include <cstdint>
+#include <set>
 #include <vector>
 
 /* Represents a tracked file stored in the index */
@@ -24,3 +25,12 @@ struct IndexEntry {
 
 std::vector<IndexEntry> read_index();
 void ls_files(bool details = false);
+
+/* Represents the status of the working directory */
+struct Status {
+    std::set<std::string> changed;
+    std::set<std::string> new_files;
+    std::set<std::string> deleted;
+};
+
+Status get_status();
