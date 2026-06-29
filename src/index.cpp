@@ -125,12 +125,12 @@ std::vector<IndexEntry> read_index() {
         size_t entry_len = ((62 + path.size() + 8) / 8) * 8;
 
         i += entry_len;
-
-        /* Check if all entries were parsed, otherwise throw an error */
-        if (entries.size() != num_entries) {
-            throw std::runtime_error("index entry count mismatch");
-        }
     }
+     /* Check if all entries were parsed, otherwise throw an error */
+    if (entries.size() != num_entries) {
+    throw std::runtime_error("index entry count mismatch");
+    }
+    
     return entries;
 }
 
