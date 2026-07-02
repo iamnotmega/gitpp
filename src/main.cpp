@@ -7,12 +7,18 @@
 #include "repository.hpp"
 #include "main.hpp"
 
-/* Helper function for reading files */
+/* Helper function for reading a file */
 std::string read_file(const std::string& path) {
     std::ifstream file(path, std::ios::binary); /* Read all bytes in file */
     if (!file) return {}; /* Return nothing if file failed to open */
     return std::string((std::istreambuf_iterator<char>(file)), /* Return them as a string */
                         std::istreambuf_iterator<char>());
+}
+
+/* Helper function for writing to a file */
+void write_file(const std::string& path, const std::vector<uint8_t>& data) {
+    std::ofstream file(path, std::ios::binary); /* Open file in binary mode */
+    file.write(reinterpret_cast<const char*>(data.data()), data.size()); /* Write data into file */
 }
 
 /* Print text block with helpful usage information */
