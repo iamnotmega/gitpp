@@ -35,3 +35,4 @@ struct Status {
 
 Status get_status();
 void status();
+void diff();

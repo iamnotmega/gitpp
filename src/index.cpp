@@ -253,3 +253,65 @@ void status() {
         }
     }
 }
+
+/* Show differences between index file and working copy */
+void diff() {
+    const Status status = get_status(); /* Get current status of repository (new, changed and removed files) */
+    const auto& changed = status.changed; /* Get only changed files */
+
+    /* Create an empty lookup table */
+    std::pmr::unordered_map<std::string, IndexEntry> entries_by_path;
+
+    /* Loop through every entry in the index file */
+    for (const auto& e : read_index()) {
+        entries_by_path[e.path] = e; /* Store the entry using its path as the key */
+    }
+
+    /* Loop through changed files */
+    size_t i = 0; /* Keep track of current file number */
+    for (const auto& path : changed) {
+        const IndexEntry& entry = entries_by_path[path]; /* Get current index entry */
+        std::string sha1 = sha1_to_hex(entry.sha1.data()); /* Convert SHA-1 hash to hexadecimal */
+
+        /* Store entry object type and raw data */
+        auto [obj_type, data] = read_object(sha1);
+
+        /* Check if the object is a blob, otherwise throw error */
+        if (obj_type != "blob") {
+            throw std::runtime_error("Expected blob");
+        }
+
+        /* Build 2 lists of lines for index and working copy variant of file */
+
+        /* Index variant */
+        std::string text(data.begin(), data.end()); /* Decode bytes into string */
+
+        std::vector<std::string> index_lines; /* Store split lines */
+        std::stringstream ss(text); /* Turn string into a stream to read line by line */
+        std::string line; /* Temporary variable for current line */
+
+        /* Read every line from stream and add it to index_lines until stream ends */
+        while (std::getline(ss, line)) {
+            index_lines.push_back(line);
+        }
+
+        /* Working copy variant */
+        std::string text2(read_file(path).begin(), read_file(path).end());
+
+        std::vector<std::string> working_lines;
+        std::stringstream ss2(text2);
+        std::string line2;
+
+        while (std::getline(ss2, line2)) {
+            working_lines.push_back(line2);
+        }
+
+        /* Compare index and working copy */
+        /* TODO: Implement line diff in the future, for now file-level is fine */
+        if (index_lines != working_lines) {
+            std::cout << path << " changed\n";
+        }
+
+        ++i;
+    }
+}
