@@ -50,7 +50,7 @@ int main(const int argc, char* argv[]) {
         return 0;
     }
     if (command == "--version" || command == "-v") {
-        std::cout << "git++ version " << GITPP_VERSION << "-unreleased" << '\n';
+        std::cout << "git++ version " << GITPP_VERSION << '\n';
         return 0;
     }
     if (command == "init") {
